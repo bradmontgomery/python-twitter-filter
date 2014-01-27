@@ -15,7 +15,7 @@ USAGE:
 """
 from os import environ
 from pprint import pprint
-from sys import argv, stderr
+from sys import argv, stderr, stdout
 from twython import TwythonStreamer
 
 try:
@@ -75,7 +75,9 @@ def filter(keywords):
 
 if __name__ == "__main__":
     try:
-        filter(argv[0])
+        search_terms = argv[0]
+        stdout.write("\nSearching for: {0}\n".format(search_terms))
+        filter(search_terms)
     except Exception as e:
         if growl:
             growl.mini("Twitter Filter Failed!")
