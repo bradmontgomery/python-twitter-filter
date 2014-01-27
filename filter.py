@@ -45,28 +45,20 @@ class StreamNotifier(TwythonStreamer):
             data['user']['screen_name'],
             data['id_str']
         )
-        spacer = "-" * 80
-
-        try:
-            message = u"{0} -- {1}:\n\n{2}\n\n{3}\n{4}\n".format(
-                data['user']['screen_name'],
-                data['user']['location'],
-                data['text'],
-                url,
-                spacer
-            )
-        except (UnicodeDecodeError, UnicodeEncodeError):
-            # punt on unicode :(
-            message = u"{0} -- {1}:\n\n{2}\n\n{3}\n{4}\n".format(
-                data['user']['screen_name'].encode('ascii', "ignore"),
-                data['user']['location'].encode('ascii', "ignore"),
-                data['text'].encode('ascii', "ignore"),
-                url,
-                spacer
-            )
-
+        spacer = u"-" * 80
+        message = u"{0} -- {1}:\n\n{2}\n\n{3}\n{4}\n".format(
+            data['user']['screen_name'],
+            data['user']['location'],
+            data['text'],
+            url,
+            spacer
+        )
         with open(OUTPUT, "a") as f:
-            f.write(message)
+            try:
+                f.write(message.encode("utf-8"))
+            except (UnicodeDecodeError, UnicodeEncodeError):
+                # punt on unicode :(
+                f.write(message.decode("ascii", "ignore").encode("utf-8"))
 
     def print_message(self, data):
         stdout.write(u"{0}\n{1}\n\n".format(
