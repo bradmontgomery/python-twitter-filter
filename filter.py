@@ -100,13 +100,15 @@ def filter(keywords):
 if __name__ == "__main__":
     try:
         search_terms = argv[1]
-        stdout.write(colored("\nSearching for: {0}\n".format(search_terms), "yellow"))
-        filter(search_terms)
+        stdout.write(
+            colored("\nSearching for: {0}\n\n".format(search_terms), "yellow")
+        )
+        filter(search_terms)  # run the streaming filter
     except Exception as e:
         if growl:
             growl.mini("Twitter Filter Failed!")
-        stderr.write(colored("\n{0}\n".format(e), "red"))
-        stderr.write("\n" + colored("-" * 40, "red") + "\n")
+        stderr.write(colored("\n\n{0}\n".format(e), "red"))
+        stderr.write(colored("\n{0}\n".format("-" * 40), "red"))
         print_exc(file=stderr)
-        stderr.write("\n" + colored("-" * 40, "red") + "\n")
+        stderr.write(colored("\n{0}\n".format("-" * 40), "red"))
         raise e
