@@ -17,6 +17,7 @@ from os import environ
 from pprint import pprint
 from sys import argv, stderr, stdout
 from termcolor import colored
+from traceback import print_exc
 from twython import TwythonStreamer
 
 try:
@@ -39,26 +40,52 @@ class StreamNotifier(TwythonStreamer):
     https://dev.twitter.com/docs/api/1.1/post/statuses/filter
 
     """
+    def write_message(self, data):
+        url = u"https://twitter.com/{0}/status/{1}".format(
+            data['user']['screen_name'],
+            data['id_str']
+        )
+        spacer = "-" * 80
+
+        try:
+            message = u"{0} -- {1}:\n\n{2}\n\n{3}\n{4}\n".format(
+                data['user']['screen_name'],
+                data['user']['location'],
+                data['text'],
+                url,
+                spacer
+            )
+        except (UnicodeDecodeError, UnicodeEncodeError):
+            # punt on unicode :(
+            message = u"{0} -- {1}:\n\n{2}\n\n{3}\n{4}\n".format(
+                data['user']['screen_name'].encode('ascii', "ignore"),
+                data['user']['location'].encode('ascii', "ignore"),
+                data['text'].encode('ascii', "ignore"),
+                url,
+                spacer
+            )
+
+        with open(OUTPUT, "a") as f:
+            f.write(message)
+
+    def print_message(self, data):
+        stdout.write(u"{0}\n{1}\n\n".format(
+            colored(data['user']['screen_name'], "yellow"),
+            colored(data['text'], "white", attrs=['bold'])
+        ))
+
+    def notify(self, data):
+        if growl:
+            growl.mini(u"{0}:\n{1}".format(
+                data['user']['screen_name'],
+                data['text']
+            ))
+
     def on_success(self, data):
         if 'text' in data:
-            text = data['text'].encode('utf-8')
-            name = data['user']['name'].encode('utf-8')
-            username = data['user']['screen_name'].encode('utf-8')
-            location = data['user']['location'].encode('utf-8')
-            tid = data['id_str']
-            url = u"https://twitter.com/{0}/status/{1}".format(username, tid)
-
-            msg = u"{0} [{1}]\n{2}\n\n{3}\n{4}\n{5}".format(
-                username, name, location, text, url, '-' * 80
-            )
-            with open(OUTPUT, "a") as f:
-                f.write(msg)
-
-            if growl:
-                growl.mini(u"{0}:\n{1}".format(username, text))
-
-            stdout.write(colored(u"{0}/{1}\n".format(username, name), "yellow"))
-            stdout.write(colored(u"{0}\n\n".format(text), "white", attrs=['bold']))
+            self.write_message(data)
+            self.print_message(data)
+            self.notify(data)
 
     def on_error(self, status_code, data):
         if growl:
@@ -86,5 +113,8 @@ if __name__ == "__main__":
     except Exception as e:
         if growl:
             growl.mini("Twitter Filter Failed!")
-        stderr.write(colored("{0}".format(e), "red"))
+        stderr.write(colored("\n{0}\n".format(e), "red"))
+        stderr.write("\n" + colored("-" * 40, "red") + "\n")
+        print_exc(file=stderr)
+        stderr.write("\n" + colored("-" * 40, "red") + "\n")
         raise e
