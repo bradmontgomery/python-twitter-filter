@@ -1,5 +1,3 @@
-"@BostonCalendar Don't forget about #Dishcrawl hosting a #foodcrawl in the #NorthEnd Feb.11th. Get your #tickets now! http://t.co/87D9NWnukx"
-
 {'contributors': None,
  'coordinates': None,
  'created_at': 'Mon Jan 27 17:29:53 +0000 2014',
