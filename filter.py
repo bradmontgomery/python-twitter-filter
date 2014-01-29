@@ -27,17 +27,28 @@ except ImportError:
 
 
 class StreamNotifier(TwythonStreamer):
-    """
-    A Custom Streamer for the Twitter Streaming API.
+    """A Custom Streamer for the Twitter Streaming API.
 
-    See:
-    http://twython.readthedocs.org/en/latest/usage/streaming_api.html
+    Usage:
+
+        stream = StreamNotifier(
+            environ['TWITTER_APP_KEY'],
+            environ['TWITTER_APP_SECRET'],
+            environ['TWITTER_OAUTH_TOKEN'],
+            environ['TWITTER_OAUTH_TOKEN_SECRET'],
+            output=output,
+            exit_on_error=True
+        )
+
+    For more info, see:
+        http://twython.readthedocs.org/en/latest/usage/streaming_api.html
     and
-    https://dev.twitter.com/docs/api/1.1/post/statuses/filter
+        https://dev.twitter.com/docs/api/1.1/post/statuses/filter
 
     """
     def __init__(self, *args, **kwargs):
         self.output_file = kwargs.pop("output", "tweets.txt")
+        self.exit_on_error = kwargs.pop("exit_on_error", False)
         return super(StreamNotifier, self).__init__(*args, **kwargs)
 
     def _tweet_url(self, data):
@@ -89,6 +100,8 @@ class StreamNotifier(TwythonStreamer):
             growl.mini(u"ERROR: {0}".format(status_code))
         stderr.write(colored(u"ERROR: {0}\n".format(status_code), "red"))
         stderr.write(colored("{0}".format(pformat(data)), "red"))
+        if self.exit_on_error:
+            exit(1)
 
 
 def filter(keywords, output=None):
@@ -104,7 +117,8 @@ def filter(keywords, output=None):
         environ['TWITTER_APP_SECRET'],
         environ['TWITTER_OAUTH_TOKEN'],
         environ['TWITTER_OAUTH_TOKEN_SECRET'],
-        output=output
+        output=output,
+        exit_on_error=True
     )
     stream.statuses.filter(track=keywords)
 
