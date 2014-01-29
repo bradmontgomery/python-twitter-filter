@@ -40,11 +40,15 @@ class StreamNotifier(TwythonStreamer):
     https://dev.twitter.com/docs/api/1.1/post/statuses/filter
 
     """
-    def write_message(self, data):
-        url = u"https://twitter.com/{0}/status/{1}".format(
+
+    def _tweet_url(self, data):
+        return u"https://twitter.com/{0}/status/{1}".format(
             data['user']['screen_name'],
             data['id_str']
         )
+
+    def write_message(self, data):
+        url = self._tweet_url(data)
         spacer = u"-" * 80
         message = u"{0} -- {1}:\n\n{2}\n\n{3}\n{4}\n".format(
             data['user']['screen_name'],
@@ -61,9 +65,11 @@ class StreamNotifier(TwythonStreamer):
                 f.write(message.decode("ascii", "ignore").encode("utf-8"))
 
     def print_message(self, data):
-        stdout.write(u"{0}\n{1}\n\n".format(
+        url = self._tweet_url(data)
+        stdout.write(u"{0}\n{1}\n{2}\n\n".format(
             colored(data['user']['screen_name'], "yellow"),
-            colored(data['text'], "white", attrs=['bold'])
+            colored(data['text'], "white", attrs=['bold']),
+            colored(url, "red")
         ))
 
     def notify(self, data):
