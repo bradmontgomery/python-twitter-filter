@@ -15,7 +15,7 @@ USAGE:
 """
 from os import environ
 from pprint import pprint
-from sys import argv, stderr, stdout
+from sys import argv, exit, stderr, stdout
 from termcolor import colored
 from traceback import print_exc
 from twython import TwythonStreamer
@@ -24,10 +24,6 @@ try:
     import gntp.notifier as growl
 except ImportError:
     growl = None  # NOQA
-
-
-# Write at matches to file for now.
-OUTPUT = "/Users/brad/Desktop/tweets.txt"
 
 
 class StreamNotifier(TwythonStreamer):
@@ -40,6 +36,9 @@ class StreamNotifier(TwythonStreamer):
     https://dev.twitter.com/docs/api/1.1/post/statuses/filter
 
     """
+    def __init__(self, *args, **kwargs):
+        self.output_file = kwargs.pop("output", "tweets.txt")
+        return super(StreamNotifier, self).__init__(*args, **kwargs)
 
     def _tweet_url(self, data):
         return u"https://twitter.com/{0}/status/{1}".format(
@@ -57,7 +56,7 @@ class StreamNotifier(TwythonStreamer):
             url,
             spacer
         )
-        with open(OUTPUT, "a") as f:
+        with open(self.output_file, "a") as f:
             try:
                 f.write(message.encode("utf-8"))
             except (UnicodeDecodeError, UnicodeEncodeError):
@@ -92,24 +91,39 @@ class StreamNotifier(TwythonStreamer):
         pprint(data)
 
 
-def filter(keywords):
-    """Creates/Returns an EventStreamer"""
+def filter(keywords, output=None):
+    """Creates an EventStreamer instance and filters the streaming API for
+    any tweets matching the given keywords.
+
+    * keywords -- a string containing keywords to match in tweets.
+    * output -- path to a text file where matched tweets are written
+
+    """
     stream = StreamNotifier(
         environ['TWITTER_APP_KEY'],
         environ['TWITTER_APP_SECRET'],
         environ['TWITTER_OAUTH_TOKEN'],
-        environ['TWITTER_OAUTH_TOKEN_SECRET']
+        environ['TWITTER_OAUTH_TOKEN_SECRET'],
+        output=output
     )
     stream.statuses.filter(track=keywords)
 
 
 if __name__ == "__main__":
+    if len(argv) != 3:
+        stderr.write(
+            colored("\nUSAGE: <search-terms> <path-to-file>\n\n", "red")
+        )
+        exit(1)
+
     try:
         search_terms = argv[1]
+        output_file = argv[2]
+
         stdout.write(
             colored("\nSearching for: {0}\n\n".format(search_terms), "yellow")
         )
-        filter(search_terms)  # run the streaming filter
+        filter(search_terms, output_file)  # run the streaming filter
     except Exception as e:
         if growl:
             growl.mini("Twitter Filter Failed!")
