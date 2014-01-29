@@ -99,7 +99,7 @@ class StreamNotifier(TwythonStreamer):
         if growl:
             growl.mini(u"ERROR: {0}".format(status_code))
         stderr.write(colored(u"ERROR: {0}\n".format(status_code), "red"))
-        stderr.write(colored("{0}".format(pformat(data)), "red"))
+        stderr.write(colored("{0}\n\n".format(pformat(data)), "red"))
         if self.exit_on_error:
             exit(1)
 
