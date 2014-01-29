@@ -14,7 +14,7 @@ USAGE:
 
 """
 from os import environ
-from pprint import pprint
+from pprint import pformat
 from sys import argv, exit, stderr, stdout
 from termcolor import colored
 from traceback import print_exc
@@ -88,7 +88,7 @@ class StreamNotifier(TwythonStreamer):
         if growl:
             growl.mini(u"ERROR: {0}".format(status_code))
         stderr.write(colored(u"ERROR: {0}\n".format(status_code), "red"))
-        pprint(data)
+        stderr.write(colored("{0}".format(pformat(data)), "red"))
 
 
 def filter(keywords, output=None):
