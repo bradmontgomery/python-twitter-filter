@@ -105,7 +105,7 @@ class StreamNotifier(TwythonStreamer):
 
 
 def filter(keywords, output=None):
-    """Creates an EventStreamer instance and filters the streaming API for
+    """Creates an SteamNotifier instance and filters the streaming API for
     any tweets matching the given keywords.
 
     * keywords -- a string containing keywords to match in tweets.
