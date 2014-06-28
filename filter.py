@@ -1,7 +1,8 @@
 """
 Toy app to filter messages from the twitter streaming api.
 
-Requires an APP Key and OAuth tokens in your environ:
+Requires an APP Key and OAuth tokens in your environ (which I stick in
+~/.twitter).
 
 * TWITTER_APP_KEY
 * TWITTER_APP_SECRET
